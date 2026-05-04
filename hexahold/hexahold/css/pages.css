@@ -1,0 +1,89 @@
+/* ============================================================
+   HexaHold — Inner Pages Styles (pages.css)
+   ============================================================ */
+
+.page-hero {
+  padding: 160px 60px 80px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.page-sub {
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── Prose Content ── */
+.prose-wrap {
+  padding: 72px 60px 120px;
+  max-width: 860px;
+}
+
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 48px 0 14px;
+  color: var(--text);
+}
+
+.prose p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.prose strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.prose ul {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.prose ul li {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 6px;
+  list-style: none;
+  position: relative;
+  padding-left: 16px;
+}
+
+.prose ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .page-hero   { padding: 120px 24px 60px; }
+  .prose-wrap  { padding: 48px 24px 80px; }
+}

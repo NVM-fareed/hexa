@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="HexaHold — The safest and most reliable global money transaction platform.">
+<title>HexaHold — Global Money Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">
+    <svg width="38" height="38" viewBox="0 0 40 40" fill="none">
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#7c5cfc" opacity="0.15"/>
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#7c5cfc" stroke-width="1.5"/>
+      <polygon points="20,8 30,14 30,26 20,32 10,26 10,14" fill="none" stroke="#a78bfa" stroke-width="0.8" opacity="0.35"/>
+      <rect x="17" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+      <rect x="20.8" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+      <rect x="17" y="16.2" width="6.6" height="2.6" rx="1.3" fill="#a78bfa"/>
+      <rect x="14.5" y="22" width="11" height="8" rx="2.5" fill="#7c5cfc"/>
+      <circle cx="20" cy="25.5" r="1.4" fill="#fff" opacity="0.85"/>
+      <rect x="19.35" y="25.5" width="1.3" height="2" rx="0.65" fill="#fff" opacity="0.85"/>
+    </svg>
+    <span class="logo-text">Hexa<span>Hold</span></span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#">Pricing</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <a href="login.html" class="btn-ghost">Login</a>
+    <a href="register.html" class="btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hex-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">Trusted by 2M+ people worldwide</div>
+    <h1>
+      HOLD<br>
+      <span class="acc">MONEY</span><br>
+      <span class="gld">GLOBALLY</span>
+    </h1>
+    <p>Send, receive, exchange and invest across borders — multiple currencies, instant settlements, unbeatable rates and zero hidden fees.</p>
+    <div class="hero-cta">
+      <a href="register.html" class="btn-large">
+        Create Account
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 3l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#how" class="btn-text">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8880aa" stroke-width="1.3"/><path d="M6 5l2 2-2 2" stroke="#8880aa" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        See how it works
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">$4.2<em>B</em></div>
+        <div class="stat-label">Processed monthly</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">180<em>+</em></div>
+        <div class="stat-label">Countries supported</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">2.1<em>M</em></div>
+        <div class="stat-label">Active users</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="card-stack">
+      <div class="float-card card-back"></div>
+      <div class="float-card card-main">
+        <div class="card-chip"></div>
+        <div class="card-number">•••• •••• •••• 7294</div>
+        <div class="card-row">
+          <div><div class="card-lbl">Cardholder</div><div class="card-val">Alex Morgan</div></div>
+          <div><div class="card-lbl">Expires</div><div class="card-val">09/28</div></div>
+          <div class="card-circles"><div class="cc"></div><div class="cc"></div></div>
+        </div>
+      </div>
+      <div class="float-badge badge-b1">
+        <div class="badge-ic ic-g">↑</div>
+        <div><div class="badge-amt g">+ $2,400.00</div><div class="badge-s">Received from Lena K.</div></div>
+      </div>
+      <div class="float-badge badge-b2">
+        <div class="badge-ic ic-p">⇄</div>
+        <div><div class="badge-amt p">€ → $ 1.084</div><div class="badge-s">Live exchange rate</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<div class="logos-bar">
+  <div class="logos-label">Trusted integrations &amp; partners</div>
+  <div class="logos-row">
+    <div class="p-logo"><svg width="18" height="18" viewBox="0 0 18 18"><rect width="18" height="18" rx="3" fill="#1A1F71" opacity="0.9"/></svg>Visa</div>
+    <div class="p-logo"><svg width="22" height="14" viewBox="0 0 22 14"><circle cx="7" cy="7" r="7" fill="#eb001b" opacity="0.9"/><circle cx="15" cy="7" r="7" fill="#f79e1b" opacity="0.9"/></svg>Mastercard</div>
+    <div class="p-logo"><svg width="18" height="18" viewBox="0 0 18 18"><rect width="18" height="18" rx="3" fill="#003087" opacity="0.9"/></svg>PayPal</div>
+    <div class="p-logo"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#F7931A" opacity="0.9"/></svg>Bitcoin</div>
+    <div class="p-logo"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#627EEA" opacity="0.9"/></svg>Ethereum</div>
+    <div class="p-logo"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#26A17B" opacity="0.9"/></svg>USDT</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="reveal">
+    <div class="section-tag">What you get</div>
+    <h2 class="section-title">All-around<br><span class="acc">payment solutions</span></h2>
+    <p class="section-sub">Every tool you need to send, receive, exchange and grow your money — in one ultra-secure platform.</p>
+  </div>
+  <div class="features-grid reveal d1">
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Payment API</div>
+      <p class="feat-desc">Integrate our seamless REST API to manage your customers' full payment experience directly within your product. Well-documented and lightning-fast.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔒</div>
+      <div class="feat-title">Bank-grade Security</div>
+      <p class="feat-desc">256-bit encryption, two-factor authentication, biometric login and real-time fraud monitoring keep your funds protected 24/7. PCI-DSS Level 1 compliant.</p>
+    </div>
+    <div class="feat wide">
+      <div class="feat-content">
+        <div class="feat-icon">⇄</div>
+        <div class="feat-title">Currency Exchange</div>
+        <p class="feat-desc">Swap between 50+ fiat and crypto currencies at live market rates with minimal fees. Set rate alerts and automate your conversions seamlessly.</p>
+      </div>
+      <div class="feat-widget">
+        <div class="ex-widget">
+          <div class="ex-row">
+            <div class="ex-left"><span class="ex-flag">🇺🇸</span><div><div class="ex-cur">USD</div><div class="ex-full">US Dollar</div></div></div>
+            <div class="ex-amt">1,000.00</div>
+          </div>
+          <div class="ex-arrow">⇅</div>
+          <div class="ex-row">
+            <div class="ex-left"><span class="ex-flag">🇪🇺</span><div><div class="ex-cur">EUR</div><div class="ex-full">Euro</div></div></div>
+            <div class="ex-amt accent">923.40</div>
+          </div>
+          <div class="ex-rate">
+            <span>1 USD = 0.9234 EUR</span>
+            <span class="rate-live">● Live rate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">💳</div>
+      <div class="feat-title">Online Payments</div>
+      <p class="feat-desc">Credit, debit, bank transfer or digital wallet — accept and make payments via your preferred method across 180+ countries.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📲</div>
+      <div class="feat-title">Payment Requests</div>
+      <p class="feat-desc">Request money from anyone in seconds. Share a link, QR code or tap NFC — they pay in their currency, you receive in yours.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section bg-alt" id="how">
+  <div class="reveal">
+    <div class="section-tag">Process</div>
+    <h2 class="section-title">Up and running<br><span class="acc">in 4 simple steps</span></h2>
+  </div>
+  <div class="steps-wrap reveal d1">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Create Account</div>
+      <p class="step-desc">Sign up in under 2 minutes. No paperwork, no branch visits — just your email and a secure password to get started.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Verify Identity</div>
+      <p class="step-desc">Quick KYC with your national ID or passport. Approvals happen within minutes, fully automated and secure.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Fund Your Wallet</div>
+      <p class="step-desc">Deposit via bank transfer, card, or crypto. Funds appear instantly, ready to use in 180+ countries immediately.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-title">Send &amp; Receive</div>
+      <p class="step-desc">Transfer money globally at real exchange rates, with low flat fees and zero hidden charges — every single time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="reviews">
+  <div class="reveal">
+    <div class="section-tag">Reviews</div>
+    <h2 class="section-title">Loved by <span class="acc">2 million+</span><br>people worldwide</h2>
+  </div>
+  <div class="t-grid reveal d1">
+    <div class="t-card">
+      <div class="stars">★★★★★</div>
+      <p class="t-text">HexaHold completely transformed how I manage business payments. <strong>The exchange rates are the best I've found anywhere</strong> — I saved nearly $800 last quarter alone.</p>
+      <div class="t-author">
+        <div class="t-avatar">AK</div>
+        <div><div class="t-name">Adaeze Kalu</div><div class="t-role">E-commerce founder, Lagos</div></div>
+      </div>
+    </div>
+    <div class="t-card">
+      <div class="stars">★★★★★</div>
+      <p class="t-text">I send money to family in three different countries every month. <strong>HexaHold is fast, cheap and utterly reliable.</strong> The app design is beautiful too.</p>
+      <div class="t-author">
+        <div class="t-avatar">MR</div>
+        <div><div class="t-name">Marco Ruiz</div><div class="t-role">Software engineer, Berlin</div></div>
+      </div>
+    </div>
+    <div class="t-card">
+      <div class="stars">★★★★★</div>
+      <p class="t-text">The payment request feature is a game-changer for freelancers. <strong>Clients pay instantly via a link</strong> — no more chasing invoices across different time zones.</p>
+      <div class="t-author">
+        <div class="t-avatar">SP</div>
+        <div><div class="t-name">Shreya Patel</div><div class="t-role">Freelance designer, Mumbai</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band reveal">
+  <div>
+    <h2 class="cta-title">Ready to hold<br><span>your money smarter?</span></h2>
+    <p class="cta-sub">Join 2 million+ people who trust HexaHold for global finance.</p>
+  </div>
+  <div class="cta-actions">
+    <a href="register.html" class="btn-large">
+      Create Free Account
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 3l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#" class="btn-ghost">Talk to sales</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#7c5cfc" opacity="0.15"/>
+          <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#7c5cfc" stroke-width="1.5"/>
+          <rect x="17" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+          <rect x="20.8" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+          <rect x="17" y="16.2" width="6.6" height="2.6" rx="1.3" fill="#a78bfa"/>
+          <rect x="14.5" y="22" width="11" height="8" rx="2.5" fill="#7c5cfc"/>
+          <circle cx="20" cy="25.5" r="1.4" fill="#fff" opacity="0.85"/>
+        </svg>
+        <span class="logo-text">Hexa<span>Hold</span></span>
+      </a>
+      <p>The safest and most reliable global money transaction platform. Send, hold and grow your money across borders with confidence.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Product</div>
+      <ul class="footer-links">
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">API Docs</a></li>
+        <li><a href="#">Changelog</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="#">Terms of Use</a></li>
+        <li><a href="#">Cookies</a></li>
+        <li><a href="#">Compliance</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 HexaHold Inc. All rights reserved.</span>
+    <div class="footer-bot-links">
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
