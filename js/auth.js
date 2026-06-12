@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         btn.innerHTML = '✓ Signed in'
         btn.style.background = '#22c55e'
-        window.location.href = 'index.html'
+        window.location.href = 'dashboard.html'
       }
     })
   }
