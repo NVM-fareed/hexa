@@ -6,37 +6,85 @@
 <title>Dashboard — HexaHold</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
 <style>
+  :root {
+    --bg:       #0a0a0f;
+    --bg2:      #0f0f1a;
+    --surface:  #13131f;
+    --surface2: #1a1a2e;
+    --accent:   #7c5cfc;
+    --accent2:  #a78bfa;
+    --gold:     #f0c060;
+    --text:     #f0eeff;
+    --muted:    #8880aa;
+    --border:   rgba(124,92,252,0.18);
+    --glow:     rgba(124,92,252,0.35);
+
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    --font-display: 'Syne', sans-serif;
+    --font-body:    'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  a { text-decoration: none; }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo-text span { color: var(--accent2); }
+
   /* ── Dashboard Layout ── */
   body { cursor: auto; }
   .cursor, .cursor-trail { display: none; }
 
-  .dash-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: 100vh;
-  width: 100%;
-}
 
-/* ── Sidebar ── */
-.sidebar {
-  width: 260px;
-  min-width: 260px;
-  max-width: 260px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 32px 24px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  z-index: 50;
-  box-sizing: border-box;
-  overflow: hidden;
-  border: 5px solid red !important;
-}
+  .dash-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 32px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 50;
+    box-sizing: border-box;
+  }
 
   .sidebar-logo { margin-bottom: 48px; }
 
@@ -45,8 +93,6 @@
     flex-direction: column;
     gap: 4px;
     flex: 1;
-    min-width: 0;
-    overflow: hidden;
   }
 
   .nav-item {
@@ -65,7 +111,6 @@
     background: none;
     width: 100%;
     text-align: left;
-    box-sizing: border-box;
   }
   .nav-item:hover { background: var(--surface2); color: var(--text); }
   .nav-item.active { background: rgba(124,92,252,0.12); color: var(--text); }
@@ -128,7 +173,6 @@
   .dash-main {
     padding: 40px 48px;
     min-height: 100vh;
-    border: 5px solid lime !important;
   }
 
   .dash-header {
