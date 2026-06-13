@@ -34,6 +34,7 @@
   height: 100vh;
   z-index: 50;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
   .sidebar-logo { margin-bottom: 48px; }
@@ -43,6 +44,8 @@
     flex-direction: column;
     gap: 4px;
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .nav-item {
@@ -61,6 +64,7 @@
     background: none;
     width: 100%;
     text-align: left;
+    box-sizing: border-box;
   }
   .nav-item:hover { background: var(--surface2); color: var(--text); }
   .nav-item.active { background: rgba(124,92,252,0.12); color: var(--text); }
