@@ -92,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
 
-   
+})
+
+
    document.getElementById('signupForm').addEventListener('submit', function(e) {
     e.preventDefault(); // Stops the page from reloading
 
@@ -126,5 +128,3 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => console.error('Error:', error));
 });
-
-})
