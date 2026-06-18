@@ -122,7 +122,7 @@ async function confirmAddWallet() {
 
   const { data: { user } } = await client.auth.getUser()
 
-await client.from('wallets').insert({
+const { error } = await client.from('wallets').insert({
   user_id: user.id,
   currency: selectedCurrency,
   balance: 0
