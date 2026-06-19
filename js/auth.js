@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 
-   document.getElementById('signupForm').addEventListener('submit', function(e) {
+   document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault(); // Stops the page from reloading
 
     // 1. Grab all the input values from the HTML form
