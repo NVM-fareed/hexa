@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw — HexaHold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0a0f;
+    --bg2:      #0f0f1a;
+    --surface:  #13131f;
+    --surface2: #1a1a2e;
+    --accent:   #7c5cfc;
+    --accent2:  #a78bfa;
+    --gold:     #f0c060;
+    --text:     #f0eeff;
+    --muted:    #8880aa;
+    --border:   rgba(124,92,252,0.18);
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --font-display: 'Syne', sans-serif;
+    --font-body:    'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-weight: 300; overflow-x: hidden; }
+  a { text-decoration: none; }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-text { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+  .logo-text span { color: var(--accent2); }
+
+  /* ── Layout ── */
+  .dash-layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; width: 100%; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px; min-width: 260px; max-width: 260px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 32px 24px;
+    position: sticky; top: 0; height: 100vh; z-index: 50;
+    box-sizing: border-box; overflow: hidden;
+  }
+  .sidebar-logo { margin-bottom: 48px; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+    border-radius: 10px; color: var(--muted); text-decoration: none;
+    font-size: 14px; font-weight: 400; transition: background 0.2s, color 0.2s;
+    cursor: pointer; border: none; background: none; width: 100%;
+    text-align: left; box-sizing: border-box;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(124,92,252,0.12); color: var(--text); }
+  .nav-item.active .nav-icon { color: var(--accent2); }
+  .nav-icon { font-size: 17px; width: 20px; text-align: center; }
+  .nav-section-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 18px 14px 8px; font-weight: 500; }
+  .sidebar-footer { border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: center; gap: 12px; }
+  .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(124,92,252,0.2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--accent2); flex-shrink: 0; }
+  .user-email { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .btn-signout { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; transition: color 0.2s; flex-shrink: 0; }
+  .btn-signout:hover { color: #ef4444; }
+
+  /* ── Main ── */
+  .dash-main { padding: 40px 48px; min-height: 100vh; }
+  .dash-header { margin-bottom: 32px; }
+  .page-title { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .page-title span { color: var(--accent2); }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Withdraw Wrap ── */
+  .withdraw-wrap {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── Method Card ── */
+  .method-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+  }
+
+  .method-section-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+  }
+
+  .methods-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .method-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 12px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    text-align: left; width: 100%;
+  }
+  .method-btn:hover:not(.coming-soon) { border-color: rgba(124,92,252,0.4); background: rgba(124,92,252,0.06); }
+  .method-btn.selected { border-color: var(--accent); background: rgba(124,92,252,0.1); }
+  .method-btn.coming-soon { opacity: 0.4; cursor: not-allowed; }
+
+  .method-left { display: flex; align-items: center; gap: 12px; }
+  .method-logo { font-size: 22px; width: 36px; text-align: center; }
+  .method-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text); }
+  .method-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .method-arrow { color: var(--muted); font-size: 14px; flex-shrink: 0; }
+  .coming-soon-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 6px; flex-shrink: 0;
+  }
+
+  .security-note {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; margin-top: 24px;
+    background: rgba(124,92,252,0.05); border: 1px solid rgba(124,92,252,0.12);
+    border-radius: 10px; font-size: 12px; color: var(--muted);
+  }
+
+  /* ── Withdraw Form Panel ── */
+  .withdraw-form-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    position: sticky;
+    top: 24px;
+  }
+
+  .withdraw-form-title { font-family: var(--font-display); font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+  .withdraw-form-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .wallet-select {
+    width: 100%; padding: 13px 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; outline: none; color: var(--text);
+    font-family: var(--font-body); font-size: 14px; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .wallet-select:focus { border-color: var(--accent); }
+  .wallet-select option { background: var(--surface2); }
+
+  .amount-input-wrap {
+    display: flex; align-items: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; transition: border-color 0.2s;
+  }
+  .amount-input-wrap:focus-within { border-color: var(--accent); }
+  .currency-symbol { padding: 14px 14px 14px 16px; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+  .amount-input-wrap input {
+    flex: 1; padding: 14px 16px 14px 0;
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: var(--font-display);
+    font-size: 20px; font-weight: 700; width: 100%;
+  }
+  .amount-input-wrap input::placeholder { color: var(--muted); font-weight: 300; }
+
+  .balance-hint { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; margin-top: 4px; }
+  .balance-hint span { color: var(--accent2); cursor: pointer; }
+  .balance-hint span:hover { color: var(--text); }
+
+  /* Quick amounts */
+  .quick-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+  .quick-amt {
+    padding: 8px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); font-family: var(--font-display);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s; text-align: center;
+  }
+  .quick-amt:hover { border-color: rgba(124,92,252,0.4); color: var(--text); background: rgba(124,92,252,0.08); }
+
+  /* Card details input */
+  .card-input {
+    width: 100%; padding: 13px 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; outline: none; color: var(--text);
+    font-family: var(--font-body); font-size: 14px;
+    transition: border-color 0.2s; margin-bottom: 10px;
+  }
+  .card-input:focus { border-color: var(--accent); }
+  .card-input::placeholder { color: var(--muted); }
+
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+
+  /* Warning box */
+  .withdraw-warning {
+    background: rgba(240,192,96,0.08);
+    border: 1px solid rgba(240,192,96,0.2);
+    border-radius: 10px; padding: 12px 14px;
+    font-size: 12px; color: var(--gold);
+    margin-bottom: 16px; line-height: 1.6;
+  }
+
+  /* Coming soon placeholder */
+  .method-placeholder { text-align: center; padding: 32px 16px; font-size: 13px; color: var(--muted); display: none; }
+  .method-placeholder.visible { display: block; }
+  .method-placeholder-icon { font-size: 32px; margin-bottom: 12px; }
+
+  .btn-withdraw {
+    width: 100%; padding: 15px; background: var(--accent);
+    color: #fff; border: none; border-radius: 12px;
+    font-family: var(--font-display); font-size: 15px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 0 30px rgba(124,92,252,0.3);
+    transition: background 0.2s, transform 0.15s; margin-top: 4px;
+  }
+  .btn-withdraw:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
+  .btn-withdraw:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .withdraw-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.6; }
+
+  /* ── Recent Withdrawals ── */
+  .recent-section { margin-top: 32px; }
+  .recent-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .recent-list { display: flex; flex-direction: column; gap: 10px; }
+  .recent-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px;
+  }
+  .recent-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(239,68,68,0.1); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .recent-info { flex: 1; min-width: 0; }
+  .recent-method { font-family: var(--font-display); font-size: 13px; font-weight: 700; }
+  .recent-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .recent-amount { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: #ef4444; text-align: right; flex-shrink: 0; }
+  .recent-status { font-size: 11px; color: var(--muted); margin-top: 2px; text-align: right; }
+  .recent-empty { text-align: center; padding: 24px; font-size: 13px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 32px; right: 32px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 20px; font-size: 14px;
+    display: flex; align-items: center; gap: 10px; z-index: 300;
+    transform: translateY(80px); opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(34,197,94,0.3); }
+  .toast.error   { border-color: rgba(239,68,68,0.3); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) { .withdraw-wrap { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    .dash-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .dash-main { padding: 24px 20px; }
+    .methods-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="dash-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="dashboard.html" class="logo sidebar-logo">
+      <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+        <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#7c5cfc" opacity="0.15"/>
+        <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#7c5cfc" stroke-width="1.5"/>
+        <rect x="17" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+        <rect x="20.8" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+        <rect x="17" y="16.2" width="6.6" height="2.6" rx="1.3" fill="#a78bfa"/>
+        <rect x="14.5" y="22" width="11" height="8" rx="2.5" fill="#7c5cfc"/>
+        <circle cx="20" cy="25.5" r="1.4" fill="#fff" opacity="0.85"/>
+      </svg>
+      <span class="logo-text">Hexa<span>Hold</span></span>
+    </a>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">▦</span> Overview</a>
+      <a class="nav-item" href="exchange.html"><span class="nav-icon">⇄</span> Exchange</a>
+      <a class="nav-item" href="deposit.html"><span class="nav-icon">＋</span> Deposit</a>
+      <a class="nav-item active" href="withdraw.html"><span class="nav-icon">－</span> Withdraw</a>
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" href="#"><span class="nav-icon">⊙</span> Transactions</a>
+      <a class="nav-item" href="#"><span class="nav-icon">◈</span> Cards</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-email" id="userEmail">Loading...</div>
+      <button class="btn-signout" id="btnSignOut">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="dash-header">
+      <div class="page-title">Withdraw <span>Funds</span></div>
+      <div class="page-sub">Transfer money from your wallet to your card or bank</div>
+    </div>
+
+    <div class="withdraw-wrap">
+
+      <!-- Left: Method selector + recent -->
+      <div>
+        <div class="method-card">
+          <div class="method-section-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Withdrawal Methods
+          </div>
+
+          <div class="methods-grid">
+            <button class="method-btn selected" id="methodCard" onclick="selectMethod('card')">
+              <div class="method-left">
+                <div class="method-logo">💳</div>
+                <div>
+                  <div class="method-name">Visa / Mastercard</div>
+                  <div class="method-desc">Withdraw to card</div>
+                </div>
+              </div>
+              <span class="method-arrow">›</span>
+            </button>
+
+            <button class="method-btn coming-soon" disabled>
+              <div class="method-left">
+                <div class="method-logo">🅿️</div>
+                <div>
+                  <div class="method-name">PayPal</div>
+                  <div class="method-desc">Withdraw to PayPal</div>
+                </div>
+              </div>
+              <span class="coming-soon-badge">Soon</span>
+            </button>
+
+            <button class="method-btn" id="methodStripe" onclick="selectMethod('card')">
+              <div class="method-left">
+                <div class="method-logo">⚡</div>
+                <div>
+                  <div class="method-name">Stripe</div>
+                  <div class="method-desc">Fast & secure</div>
+                </div>
+              </div>
+              <span class="method-arrow">›</span>
+            </button>
+
+            <button class="method-btn coming-soon" disabled>
+              <div class="method-left">
+                <div class="method-logo">🟣</div>
+                <div>
+                  <div class="method-name">Skrill</div>
+                  <div class="method-desc">Global payments</div>
+                </div>
+              </div>
+              <span class="coming-soon-badge">Soon</span>
+            </button>
+
+            <button class="method-btn coming-soon" style="grid-column: span 2;" disabled>
+              <div class="method-left">
+                <div class="method-logo">🏦</div>
+                <div>
+                  <div class="method-name">Bank Transfer</div>
+                  <div class="method-desc">Direct to bank account</div>
+                </div>
+              </div>
+              <span class="coming-soon-badge">Soon</span>
+            </button>
+          </div>
+
+          <div class="security-note">
+            🛡️ Withdrawals are processed securely. Funds typically arrive within 1–3 business days.
+          </div>
+        </div>
+
+        <!-- Recent withdrawals -->
+        <div class="recent-section">
+          <div class="recent-title">Recent Withdrawals</div>
+          <div class="recent-list" id="recentList">
+            <div class="recent-empty">No withdrawals yet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Withdraw form -->
+      <div class="withdraw-form-panel">
+        <div class="withdraw-form-title" id="formTitle">Card Withdrawal</div>
+        <div class="withdraw-form-sub" id="formSub">Withdraw to your Visa or Mastercard</div>
+
+        <!-- Wallet -->
+        <div class="form-group">
+          <div class="form-label">Withdraw from wallet</div>
+          <select class="wallet-select" id="walletSelect" onchange="updateBalanceHint()"></select>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <div class="form-label">Amount</div>
+          <div class="amount-input-wrap">
+            <span class="currency-symbol" id="currencySymbol">$</span>
+            <input type="number" id="withdrawAmount" placeholder="0.00" min="1" step="0.01" oninput="validateForm()">
+          </div>
+          <div class="balance-hint">
+            <span id="balanceHint">Available: —</span>
+            <span onclick="useMax()">Use max</span>
+          </div>
+        </div>
+
+        <!-- Quick amounts -->
+        <div class="quick-amounts">
+          <button class="quick-amt" onclick="setAmount(10)">$10</button>
+          <button class="quick-amt" onclick="setAmount(50)">$50</button>
+          <button class="quick-amt" onclick="setAmount(100)">$100</button>
+          <button class="quick-amt" onclick="setAmount(500)">$500</button>
+        </div>
+
+        <!-- Card details -->
+        <div id="cardDetails">
+          <div class="form-label" style="margin-bottom:10px">Card to withdraw to</div>
+          <input class="card-input" type="text" id="cardName" placeholder="Cardholder name" oninput="validateForm()">
+          <input class="card-input" type="text" id="cardNumber" placeholder="Card number (16 digits)" maxlength="19" oninput="formatCardNumber(); validateForm()">
+          <div class="card-row">
+            <input class="card-input" style="margin-bottom:0" type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(); validateForm()">
+            <input class="card-input" style="margin-bottom:0" type="text" id="cardCvc" placeholder="CVC" maxlength="3" oninput="validateForm()">
+          </div>
+        </div>
+
+        <div class="withdraw-warning" style="margin-top:16px">
+          ⚠️ In test mode, withdrawals simulate balance deduction only. Real payouts require Stripe Connect setup.
+        </div>
+
+        <button class="btn-withdraw" id="btnWithdraw" onclick="doWithdraw()" disabled>
+          Withdraw Funds
+        </button>
+
+        <div class="withdraw-note">
+          Minimum withdrawal: $10 · Processing time: 1–3 business days
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = supabase
+const SUPABASE_URL = 'YOUR_SUPABASE_URL'
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'
+const client = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+const CURRENCIES = [
+  { code: 'USD', symbol: '$'   },
+  { code: 'EUR', symbol: '€'   },
+  { code: 'GBP', symbol: '£'   },
+  { code: 'NGN', symbol: '₦'   },
+  { code: 'GHS', symbol: '₵'   },
+  { code: 'KES', symbol: 'KSh' },
+  { code: 'BTC', symbol: '₿'   },
+  { code: 'ETH', symbol: 'Ξ'   },
+  { code: 'USDT',symbol: '₮'   },
+]
+
+let currentUser = null
+let userWallets = []
+let currentMethod = 'card'
+
+/* ── Toast ── */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast')
+  t.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg
+  t.className = `toast ${type} show`
+  setTimeout(() => t.classList.remove('show'), 3500)
+}
+
+/* ── Helpers ── */
+function setAmount(val) {
+  document.getElementById('withdrawAmount').value = val
+  validateForm()
+}
+
+function useMax() {
+  const currency = document.getElementById('walletSelect').value
+  const wallet = userWallets.find(w => w.currency === currency)
+  if (wallet) {
+    document.getElementById('withdrawAmount').value = parseFloat(wallet.balance)
+    validateForm()
+  }
+}
+
+function formatCardNumber() {
+  let val = document.getElementById('cardNumber').value.replace(/\D/g, '').substring(0, 16)
+  document.getElementById('cardNumber').value = val.replace(/(.{4})/g, '$1 ').trim()
+}
+
+function formatExpiry() {
+  let val = document.getElementById('cardExpiry').value.replace(/\D/g, '').substring(0, 4)
+  if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2)
+  document.getElementById('cardExpiry').value = val
+}
+
+/* ── Method selector ── */
+function selectMethod(method) {
+  currentMethod = method
+  document.querySelectorAll('.method-btn:not(.coming-soon)').forEach(b => b.classList.remove('selected'))
+  document.getElementById('methodCard').classList.add('selected')
+  document.getElementById('methodStripe').classList.add('selected')
+  validateForm()
+}
+
+/* ── Balance hint ── */
+function updateBalanceHint() {
+  const currency = document.getElementById('walletSelect').value
+  const wallet = userWallets.find(w => w.currency === currency)
+  const cur = CURRENCIES.find(c => c.code === currency)
+
+  document.getElementById('currencySymbol').textContent = cur?.symbol || '$'
+  document.getElementById('balanceHint').textContent = wallet
+    ? `Available: ${cur?.symbol || ''}${parseFloat(wallet.balance).toLocaleString()}`
+    : 'No wallet'
+
+  validateForm()
+}
+
+/* ── Validate form ── */
+function validateForm() {
+  const amount   = parseFloat(document.getElementById('withdrawAmount').value)
+  const currency = document.getElementById('walletSelect').value
+  const wallet   = userWallets.find(w => w.currency === currency)
+  const balance  = wallet ? parseFloat(wallet.balance) : 0
+  const name     = document.getElementById('cardName').value.trim()
+  const number   = document.getElementById('cardNumber').value.replace(/\s/g, '')
+  const expiry   = document.getElementById('cardExpiry').value
+  const cvc      = document.getElementById('cardCvc').value
+
+  const valid =
+    amount >= 1 &&
+    amount <= balance &&
+    name.length > 2 &&
+    number.length === 16 &&
+    expiry.length === 5 &&
+    cvc.length === 3
+
+  document.getElementById('btnWithdraw').disabled = !valid
+}
+
+/* ── Do withdraw ── */
+async function doWithdraw() {
+  const amount   = parseFloat(document.getElementById('withdrawAmount').value)
+  const currency = document.getElementById('walletSelect').value
+  const btn      = document.getElementById('btnWithdraw')
+
+  btn.disabled = true
+  btn.textContent = 'Processing…'
+
+  try {
+    const wallet = userWallets.find(w => w.currency === currency)
+    const newBalance = parseFloat(wallet.balance) - amount
+
+    if (newBalance < 0) throw new Error('Insufficient balance')
+
+    // Deduct from wallet
+    const { error: updateErr } = await client
+      .from('wallets')
+      .update({ balance: newBalance })
+      .eq('user_id', currentUser.id)
+      .eq('currency', currency)
+
+    if (updateErr) throw updateErr
+
+    // Record transaction
+    await client.from('transactions').insert({
+      user_id: currentUser.id,
+      type: 'send',
+      from_currency: currency,
+      from_amount: amount,
+      to_currency: currency,
+      to_amount: amount,
+      rate: 1,
+      status: 'completed'
+    })
+
+    showToast(`Withdrawal of ${amount.toLocaleString()} ${currency} initiated`)
+    document.getElementById('withdrawAmount').value = ''
+    document.getElementById('cardName').value = ''
+    document.getElementById('cardNumber').value = ''
+    document.getElementById('cardExpiry').value = ''
+    document.getElementById('cardCvc').value = ''
+
+    await loadWallets()
+    await loadRecentWithdrawals()
+
+  } catch (err) {
+    showToast(err.message || 'Withdrawal failed', 'error')
+  }
+
+  btn.disabled = false
+  btn.textContent = 'Withdraw Funds'
+}
+
+/* ── Load wallets ── */
+async function loadWallets() {
+  const { data } = await client.from('wallets').select('*').order('created_at')
+  userWallets = data || []
+
+  const sel = document.getElementById('walletSelect')
+  if (!userWallets.length) {
+    sel.innerHTML = '<option value="">No wallets — add one first</option>'
+    document.getElementById('btnWithdraw').disabled = true
+    return
+  }
+
+  sel.innerHTML = userWallets.map(w => {
+    const cur = CURRENCIES.find(c => c.code === w.currency)
+    const bal = parseFloat(w.balance).toLocaleString()
+    return `<option value="${w.currency}">${cur?.symbol || ''} ${w.currency} — Balance: ${bal}</option>`
+  }).join('')
+
+  updateBalanceHint()
+}
+
+/* ── Load recent withdrawals ── */
+async function loadRecentWithdrawals() {
+  const { data } = await client
+    .from('transactions')
+    .select('*')
+    .eq('type', 'send')
+    .is('recipient_id', null)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  const list = document.getElementById('recentList')
+
+  if (!data?.length) {
+    list.innerHTML = '<div class="recent-empty">No withdrawals yet</div>'
+    return
+  }
+
+  list.innerHTML = data.map(tx => {
+    const date = new Date(tx.created_at).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    })
+    const cur = CURRENCIES.find(c => c.code === tx.from_currency)
+    return `
+      <div class="recent-item">
+        <div class="recent-icon">↓</div>
+        <div class="recent-info">
+          <div class="recent-method">Card Withdrawal</div>
+          <div class="recent-date">${date}</div>
+        </div>
+        <div>
+          <div class="recent-amount">-${cur?.symbol || ''}${parseFloat(tx.from_amount).toLocaleString()} ${tx.from_currency}</div>
+          <div class="recent-status">Completed</div>
+        </div>
+      </div>`
+  }).join('')
+}
+
+/* ── Auth ── */
+async function initUser() {
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) { window.location.href = 'login.html'; return }
+  currentUser = user
+  const email = user.email || ''
+  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase()
+  document.getElementById('userEmail').textContent = email
+}
+
+document.getElementById('btnSignOut').addEventListener('click', async () => {
+  await client.auth.signOut()
+  window.location.href = 'login.html'
+})
+
+/* ── Init ── */
+async function init() {
+  await initUser()
+  await loadWallets()
+  await loadRecentWithdrawals()
+}
+
+init()
+</script>
+</body>
+</html>
