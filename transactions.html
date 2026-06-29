@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions — HexaHold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0a0f;
+    --bg2:      #0f0f1a;
+    --surface:  #13131f;
+    --surface2: #1a1a2e;
+    --accent:   #7c5cfc;
+    --accent2:  #a78bfa;
+    --gold:     #f0c060;
+    --text:     #f0eeff;
+    --muted:    #8880aa;
+    --border:   rgba(124,92,252,0.18);
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --font-display: 'Syne', sans-serif;
+    --font-body:    'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-weight: 300; overflow-x: hidden; }
+  a { text-decoration: none; }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-text { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+  .logo-text span { color: var(--accent2); }
+
+  /* ── Layout ── */
+  .dash-layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; width: 100%; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px; min-width: 260px; max-width: 260px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 32px 24px;
+    position: sticky; top: 0; height: 100vh; z-index: 50;
+    box-sizing: border-box; overflow: hidden;
+  }
+  .sidebar-logo { margin-bottom: 48px; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+    border-radius: 10px; color: var(--muted); text-decoration: none;
+    font-size: 14px; font-weight: 400; transition: background 0.2s, color 0.2s;
+    cursor: pointer; border: none; background: none; width: 100%;
+    text-align: left; box-sizing: border-box;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(124,92,252,0.12); color: var(--text); }
+  .nav-item.active .nav-icon { color: var(--accent2); }
+  .nav-icon { font-size: 17px; width: 20px; text-align: center; }
+  .nav-section-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 18px 14px 8px; font-weight: 500; }
+  .sidebar-footer { border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: center; gap: 12px; }
+  .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(124,92,252,0.2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--accent2); flex-shrink: 0; }
+  .user-email { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .btn-signout { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; transition: color 0.2s; flex-shrink: 0; }
+  .btn-signout:hover { color: #ef4444; }
+
+  /* ── Main ── */
+  .dash-main { padding: 40px 48px; min-height: 100vh; }
+  .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+  .page-title { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .page-title span { color: var(--accent2); }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Summary Cards ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+
+  .summary-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.04em; }
+  .summary-value { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .summary-value.green { color: #22c55e; }
+  .summary-value.red { color: #ef4444; }
+  .summary-value.purple { color: var(--accent2); }
+  .summary-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Transactions Card ── */
+  .tx-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  /* ── Tabs + Search Bar ── */
+  .tx-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .tx-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 4px;
+  }
+
+  .tx-tab {
+    padding: 8px 16px; border: none; background: none;
+    border-radius: 8px; color: var(--muted);
+    font-family: var(--font-display); font-size: 13px;
+    font-weight: 700; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .tx-tab.active { background: var(--accent); color: #fff; }
+
+  .tx-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 14px;
+    transition: border-color 0.2s;
+  }
+  .tx-search:focus-within { border-color: var(--accent); }
+  .tx-search input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: var(--font-body);
+    font-size: 13px; width: 200px;
+  }
+  .tx-search input::placeholder { color: var(--muted); }
+
+  /* ── Transaction List ── */
+  .tx-list { display: flex; flex-direction: column; }
+
+  .tx-item {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-item:hover { background: rgba(124,92,252,0.04); }
+
+  .tx-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .tx-icon.deposit  { background: rgba(34,197,94,0.12); }
+  .tx-icon.withdraw { background: rgba(239,68,68,0.12); }
+  .tx-icon.exchange { background: rgba(124,92,252,0.12); }
+  .tx-icon.transfer { background: rgba(240,192,96,0.12); }
+
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; }
+  .tx-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .tx-amount { text-align: right; flex-shrink: 0; }
+  .tx-amt-val { font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+  .tx-amt-val.positive { color: #22c55e; }
+  .tx-amt-val.negative { color: #ef4444; }
+  .tx-amt-val.neutral  { color: var(--accent2); }
+  .tx-date { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .tx-badge {
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .tx-badge.completed { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .tx-badge.pending   { background: rgba(240,192,96,0.12); color: var(--gold); }
+  .tx-badge.failed    { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+  /* Empty / Loading states */
+  .tx-empty {
+    text-align: center; padding: 64px 24px;
+    font-size: 13px; color: var(--muted);
+  }
+  .tx-empty-icon { font-size: 40px; margin-bottom: 16px; }
+  .tx-empty h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+
+  .tx-loading {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .tx-skeleton {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+  }
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Pagination */
+  .tx-pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    font-size: 13px; color: var(--muted);
+  }
+
+  .pagination-btns { display: flex; gap: 8px; }
+  .page-btn {
+    padding: 7px 14px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); font-family: var(--font-display);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-btn.active { border-color: var(--accent); background: rgba(124,92,252,0.12); color: var(--accent2); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 32px; right: 32px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 20px; font-size: 14px;
+    display: flex; align-items: center; gap: 10px; z-index: 300;
+    transform: translateY(80px); opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(34,197,94,0.3); }
+  .toast.error   { border-color: rgba(239,68,68,0.3); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) {
+    .dash-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .dash-main { padding: 24px 20px; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .tx-search input { width: 140px; }
+  }
+  @media (max-width: 500px) {
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .tx-tabs { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="dash-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="dashboard.html" class="logo sidebar-logo">
+      <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+        <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#7c5cfc" opacity="0.15"/>
+        <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#7c5cfc" stroke-width="1.5"/>
+        <rect x="17" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+        <rect x="20.8" y="12" width="2.8" height="9" rx="1.4" fill="#a78bfa"/>
+        <rect x="17" y="16.2" width="6.6" height="2.6" rx="1.3" fill="#a78bfa"/>
+        <rect x="14.5" y="22" width="11" height="8" rx="2.5" fill="#7c5cfc"/>
+        <circle cx="20" cy="25.5" r="1.4" fill="#fff" opacity="0.85"/>
+      </svg>
+      <span class="logo-text">Hexa<span>Hold</span></span>
+    </a>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">▦</span> Overview</a>
+      <a class="nav-item" href="exchange.html"><span class="nav-icon">⇄</span> Exchange</a>
+      <a class="nav-item" href="deposit.html"><span class="nav-icon">＋</span> Deposit</a>
+      <a class="nav-item" href="withdraw.html"><span class="nav-icon">－</span> Withdraw</a>
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item active" href="transactions.html"><span class="nav-icon">⊙</span> Transactions</a>
+      <a class="nav-item" href="#"><span class="nav-icon">◈</span> Cards</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⚙</span> Settings</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-email" id="userEmail">Loading...</div>
+      <button class="btn-signout" id="btnSignOut">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <div class="page-title">Transaction <span>History</span></div>
+        <div class="page-sub">All your deposits, withdrawals, exchanges and transfers</div>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Total Deposited</div>
+        <div class="summary-value green" id="totalDeposited">—</div>
+        <div class="summary-sub">All time</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Withdrawn</div>
+        <div class="summary-value red" id="totalWithdrawn">—</div>
+        <div class="summary-sub">All time</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Exchanged</div>
+        <div class="summary-value purple" id="totalExchanged">—</div>
+        <div class="summary-sub">All time</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Transactions</div>
+        <div class="summary-value" id="totalCount">—</div>
+        <div class="summary-sub">All time</div>
+      </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="tx-card">
+      <div class="tx-toolbar">
+        <div class="tx-tabs">
+          <button class="tx-tab active" onclick="switchTab('all')">All</button>
+          <button class="tx-tab" onclick="switchTab('deposit')">Deposits</button>
+          <button class="tx-tab" onclick="switchTab('withdraw')">Withdrawals</button>
+          <button class="tx-tab" onclick="switchTab('exchange')">Exchanges</button>
+          <button class="tx-tab" onclick="switchTab('transfer')">Transfers</button>
+        </div>
+        <div class="tx-search">
+          <span style="color:var(--muted);font-size:14px">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search transactions…" oninput="filterTransactions()">
+        </div>
+      </div>
+
+      <div class="tx-list" id="txList">
+        <!-- Skeleton loading -->
+        <div class="tx-loading">
+          ${[...Array(5)].map(() => `
+          <div class="tx-skeleton">
+            <div class="skeleton" style="width:42px;height:42px;border-radius:12px;flex-shrink:0"></div>
+            <div style="flex:1">
+              <div class="skeleton" style="width:160px;height:14px;margin-bottom:6px"></div>
+              <div class="skeleton" style="width:100px;height:11px"></div>
+            </div>
+            <div style="text-align:right">
+              <div class="skeleton" style="width:80px;height:15px;margin-bottom:6px;margin-left:auto"></div>
+              <div class="skeleton" style="width:50px;height:11px;margin-left:auto"></div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="tx-pagination" id="txPagination" style="display:none">
+        <span id="paginationInfo"></span>
+        <div class="pagination-btns" id="paginationBtns"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a428c4569da741d47d8322d/1js9v7ssn';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = supabase
+const SUPABASE_URL = 'YOUR_SUPABASE_URL'
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'
+const client = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+let currentUser   = null
+let allTx         = []
+let filteredTx    = []
+let currentTab    = 'all'
+let currentPage   = 1
+const PAGE_SIZE   = 15
+
+const CURRENCIES = [
+  { code: 'USD', symbol: '$'   },
+  { code: 'EUR', symbol: '€'   },
+  { code: 'GBP', symbol: '£'   },
+  { code: 'NGN', symbol: '₦'   },
+  { code: 'GHS', symbol: '₵'   },
+  { code: 'KES', symbol: 'KSh' },
+  { code: 'BTC', symbol: '₿'   },
+  { code: 'ETH', symbol: 'Ξ'   },
+  { code: 'USDT',symbol: '₮'   },
+]
+
+function getSymbol(code) {
+  return CURRENCIES.find(c => c.code === code)?.symbol || ''
+}
+
+/* ── Toast ── */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast')
+  t.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg
+  t.className = `toast ${type} show`
+  setTimeout(() => t.classList.remove('show'), 3500)
+}
+
+/* ── Tab switch ── */
+function switchTab(tab) {
+  currentTab = tab
+  currentPage = 1
+  document.querySelectorAll('.tx-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['all','deposit','withdraw','exchange','transfer'][i] === tab)
+  })
+  filterTransactions()
+}
+
+/* ── Filter ── */
+function filterTransactions() {
+  const search = document.getElementById('searchInput').value.toLowerCase()
+
+  filteredTx = allTx.filter(tx => {
+    // Tab filter
+    if (currentTab === 'deposit'  && tx.type !== 'receive') return false
+    if (currentTab === 'withdraw' && !(tx.type === 'send' && !tx.recipient_id)) return false
+    if (currentTab === 'exchange' && tx.type !== 'exchange') return false
+    if (currentTab === 'transfer' && !(tx.type === 'send' && tx.recipient_id)) return false
+
+    // Search filter
+    if (search) {
+      const searchable = [
+        tx.type, tx.from_currency, tx.to_currency,
+        tx.from_amount?.toString(), tx.to_amount?.toString(), tx.status
+      ].join(' ').toLowerCase()
+      if (!searchable.includes(search)) return false
+    }
+
+    return true
+  })
+
+  currentPage = 1
+  renderTransactions()
+}
+
+/* ── Render ── */
+function renderTransactions() {
+  const list = document.getElementById('txList')
+  const pagination = document.getElementById('txPagination')
+
+  if (!filteredTx.length) {
+    list.innerHTML = `
+      <div class="tx-empty">
+        <div class="tx-empty-icon">📋</div>
+        <h3>No transactions found</h3>
+        <p>Your transaction history will appear here</p>
+      </div>`
+    pagination.style.display = 'none'
+    return
+  }
+
+  const totalPages = Math.ceil(filteredTx.length / PAGE_SIZE)
+  const start = (currentPage - 1) * PAGE_SIZE
+  const pageTx = filteredTx.slice(start, start + PAGE_SIZE)
+
+  list.innerHTML = pageTx.map(tx => {
+    const { icon, iconClass, title, amountStr, amountClass } = formatTx(tx)
+    const date = new Date(tx.created_at).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    })
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${iconClass}">${icon}</div>
+        <div class="tx-info">
+          <div class="tx-title">${title}</div>
+          <div class="tx-meta">${date}</div>
+        </div>
+        <div class="tx-amount">
+          <div class="tx-amt-val ${amountClass}">${amountStr}</div>
+          <div class="tx-date"><span class="tx-badge ${tx.status}">${tx.status}</span></div>
+        </div>
+      </div>`
+  }).join('')
+
+  // Pagination
+  if (totalPages > 1) {
+    pagination.style.display = 'flex'
+    document.getElementById('paginationInfo').textContent =
+      `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, filteredTx.length)} of ${filteredTx.length}`
+
+    const btns = document.getElementById('paginationBtns')
+    btns.innerHTML = `
+      <button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+      ${Array.from({ length: totalPages }, (_, i) => `
+        <button class="page-btn ${i + 1 === currentPage ? 'active' : ''}" onclick="goPage(${i + 1})">${i + 1}</button>
+      `).join('')}
+      <button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+    `
+  } else {
+    pagination.style.display = 'none'
+  }
+}
+
+function goPage(page) {
+  const totalPages = Math.ceil(filteredTx.length / PAGE_SIZE)
+  if (page < 1 || page > totalPages) return
+  currentPage = page
+  renderTransactions()
+  document.querySelector('.tx-card').scrollIntoView({ behavior: 'smooth' })
+}
+
+/* ── Format transaction ── */
+function formatTx(tx) {
+  let icon, iconClass, title, amountStr, amountClass
+
+  if (tx.type === 'receive' && !tx.recipient_id) {
+    // Deposit
+    icon = '↓'
+    iconClass = 'deposit'
+    title = `Deposit — ${tx.to_currency}`
+    amountStr = `+${getSymbol(tx.to_currency)}${parseFloat(tx.to_amount).toLocaleString()} ${tx.to_currency}`
+    amountClass = 'positive'
+  } else if (tx.type === 'receive' && tx.recipient_id) {
+    // Incoming transfer
+    icon = '↙'
+    iconClass = 'transfer'
+    title = `Transfer received — ${tx.to_currency}`
+    amountStr = `+${getSymbol(tx.to_currency)}${parseFloat(tx.to_amount).toLocaleString()} ${tx.to_currency}`
+    amountClass = 'positive'
+  } else if (tx.type === 'send' && !tx.recipient_id) {
+    // Withdrawal
+    icon = '↑'
+    iconClass = 'withdraw'
+    title = `Withdrawal — ${tx.from_currency}`
+    amountStr = `-${getSymbol(tx.from_currency)}${parseFloat(tx.from_amount).toLocaleString()} ${tx.from_currency}`
+    amountClass = 'negative'
+  } else if (tx.type === 'send' && tx.recipient_id) {
+    // Outgoing transfer
+    icon = '↗'
+    iconClass = 'transfer'
+    title = `Transfer sent — ${tx.from_currency} → ${tx.to_currency}`
+    amountStr = `-${getSymbol(tx.from_currency)}${parseFloat(tx.from_amount).toLocaleString()} ${tx.from_currency}`
+    amountClass = 'negative'
+  } else if (tx.type === 'exchange') {
+    // Exchange
+    icon = '⇄'
+    iconClass = 'exchange'
+    title = `Exchange — ${tx.from_currency} → ${tx.to_currency}`
+    amountStr = `${getSymbol(tx.to_currency)}${parseFloat(tx.to_amount).toFixed(4)} ${tx.to_currency}`
+    amountClass = 'neutral'
+  } else {
+    icon = '•'
+    iconClass = 'exchange'
+    title = tx.type
+    amountStr = '—'
+    amountClass = 'neutral'
+  }
+
+  return { icon, iconClass, title, amountStr, amountClass }
+}
+
+/* ── Summary stats ── */
+function updateSummary(txs) {
+  let deposited = 0, withdrawn = 0, exchanged = 0
+
+  txs.forEach(tx => {
+    if (tx.type === 'receive' && !tx.recipient_id) deposited += parseFloat(tx.to_amount || 0)
+    if (tx.type === 'send'    && !tx.recipient_id) withdrawn += parseFloat(tx.from_amount || 0)
+    if (tx.type === 'exchange') exchanged += parseFloat(tx.from_amount || 0)
+  })
+
+  document.getElementById('totalDeposited').textContent = `$${deposited.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  document.getElementById('totalWithdrawn').textContent = `$${withdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  document.getElementById('totalExchanged').textContent = `$${exchanged.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  document.getElementById('totalCount').textContent = txs.length
+}
+
+/* ── Load transactions ── */
+async function loadTransactions() {
+  const { data, error } = await client
+    .from('transactions')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    showToast('Failed to load transactions', 'error')
+    document.getElementById('txList').innerHTML = `
+      <div class="tx-empty">
+        <div class="tx-empty-icon">⚠️</div>
+        <h3>Failed to load</h3>
+        <p>Please refresh the page</p>
+      </div>`
+    return
+  }
+
+  allTx = data || []
+  filteredTx = [...allTx]
+  updateSummary(allTx)
+  renderTransactions()
+}
+
+/* ── Auth ── */
+async function initUser() {
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) { window.location.href = 'login.html'; return }
+  currentUser = user
+  const email = user.email || ''
+  document.getElementById('userAvatar').textContent = email.slice(0, 2).toUpperCase()
+  document.getElementById('userEmail').textContent = email
+}
+
+document.getElementById('btnSignOut').addEventListener('click', async () => {
+  await client.auth.signOut()
+  window.location.href = 'login.html'
+})
+
+/* ── Init ── */
+async function init() {
+  await initUser()
+  await loadTransactions()
+}
+
+init()
+</script>
+</body>
+</html>
