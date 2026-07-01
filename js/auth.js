@@ -3,7 +3,6 @@
    ============================================================ */
 
 const { createClient } = supabase
-
 const SUPABASE_URL = 'https://lkgtpqkvkgicfxxbttba.supabase.co'
 const SUPABASE_KEY = 'sb_publishable_zZGsFQQllmYYBhTz8U8DXA_G64oXaT0'
 const client = createClient(SUPABASE_URL, SUPABASE_KEY)
@@ -50,19 +49,45 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.textContent = 'Creating account…'
       btn.disabled = true
 
-      const email    = document.getElementById('email').value
-      const password = document.getElementById('password').value
+      const firstName = document.getElementById('firstName').value.trim()
+      const lastName  = document.getElementById('lastName').value.trim()
+      const email     = document.getElementById('email').value.trim()
+      const password  = document.getElementById('password').value
+      const country   = document.getElementById('country').value
+      const phone     = document.getElementById('phone').value.trim()
 
-      const { error } = await client.auth.signUp({ email, password })
+      // Sign up with Supabase Auth
+      const { data, error } = await client.auth.signUp({ email, password })
 
       if (error) {
         btn.textContent = error.message
         btn.style.background = '#ef4444'
         btn.disabled = false
-      } else {
-        btn.innerHTML = '✓ Account created!'
-        btn.style.background = '#22c55e'
+        return
       }
+
+      // Save profile data
+      const { error: profileError } = await client
+        .from('profiles')
+        .upsert({
+          id: data.user.id,
+          email,
+          full_name: `${firstName} ${lastName}`,
+          phone,
+          country,
+          default_currency: 'USD'
+        })
+
+      if (profileError) {
+        btn.textContent = profileError.message
+        btn.style.background = '#ef4444'
+        btn.disabled = false
+        return
+      }
+
+      btn.innerHTML = '✓ Account created!'
+      btn.style.background = '#22c55e'
+      setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
     })
   }
 
@@ -90,10 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'dashboard.html'
       }
     })
-     
   }
+
 })
-
-
-
-
