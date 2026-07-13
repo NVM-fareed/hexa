@@ -68,16 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Save profile data
       const { error: profileError } = await client
-        .from('profiles')
-        .upsert({
-          id: data.user.id,
-          email,
-          full_name: `${firstName} ${lastName}`,
-          phone,
-          country,
-          default_currency: 'USD'
-        })
+  .from('profiles')
+  .upsert({
+    id: data.user.id,
+    email,
+    full_name: `${firstName} ${lastName}`,
+    phone,
+    country,
+    default_currency: 'USD'
+  }, { onConflict: 'id' }) 
 
+       
       if (profileError) {
         btn.textContent = profileError.message
         btn.style.background = '#ef4444'
