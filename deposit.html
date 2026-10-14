@@ -590,23 +590,30 @@ function setupStripe() {
   })
 }
 
-/* ── Load wallets ── */
+/* Card deposits only make sense for fiat currencies Stripe can charge. */
+const CARD_DEPOSIT_CURRENCIES = ['USD', 'EUR', 'GBP']
+
 async function loadWallets() {
   const { data } = await client.from('wallets').select('*').order('created_at')
   userWallets = data || []
 
   const sel = document.getElementById('walletSelect')
-  if (!userWallets.length) {
-    sel.innerHTML = '<option value="">No wallets — add one first</option>'
+  const depositable = userWallets.filter(w => CARD_DEPOSIT_CURRENCIES.includes(w.currency))
+
+  if (!depositable.length) {
+    sel.innerHTML = '<option value="">No USD / EUR / GBP wallet — add one first</option>'
     document.getElementById('btnDeposit').disabled = true
     return
   }
 
-  sel.innerHTML = userWallets.map(w => {
+  const previous = sel.value
+  sel.innerHTML = depositable.map(w => {
     const cur = CURRENCIES.find(c => c.code === w.currency)
     const bal = parseFloat(w.balance).toLocaleString()
     return `<option value="${w.currency}">${cur?.symbol || ''} ${w.currency} — Balance: ${bal}</option>`
   }).join('')
+  if (previous && depositable.some(w => w.currency === previous)) sel.value = previous
+  document.getElementById('btnDeposit').disabled = false
 }
 
 /* ── Do deposit ── */
@@ -614,60 +621,54 @@ async function doDeposit() {
   const amount   = parseFloat(document.getElementById('depositAmount').value)
   const currency = document.getElementById('walletSelect').value
   const btn      = document.getElementById('btnDeposit')
+  const errBox   = document.getElementById('card-errors')
 
-  if (!amount || amount < 1) { showToast('Enter a valid amount', 'error'); return }
-  if (!currency) { showToast('Select a wallet', 'error'); return }
+  if (!amount || amount < 1 || amount > 10000) { showToast('Enter an amount between 1 and 10,000', 'error'); return }
+  if (!CARD_DEPOSIT_CURRENCIES.includes(currency)) { showToast('Select a USD, EUR or GBP wallet', 'error'); return }
 
   btn.disabled = true
   btn.textContent = 'Processing…'
+  errBox.textContent = ''
 
   try {
-    // Create payment intent via Supabase Edge Function
-    // For now in test mode — simulate with Stripe test confirmation
-    const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-    })
+    const before = parseFloat(userWallets.find(w => w.currency === currency)?.balance || 0)
 
-    if (pmError) {
-      document.getElementById('card-errors').textContent = pmError.message
-      btn.disabled = false
-      btn.textContent = 'Deposit Now'
-      return
+    // 1. Ask our server to create the PaymentIntent
+    const { data, error } = await client.functions.invoke('create-deposit', {
+      body: { amount, currency }
+    })
+    if (error || !data?.client_secret) {
+      throw new Error(data?.error || error?.message || 'Could not start deposit')
     }
 
-    // In production you'd call your backend to create a PaymentIntent
-    // For test mode, we simulate a successful deposit directly
-    const amountInCents = Math.round(amount * 100)
+    // 2. Charge the card with Stripe
+    const { error: confirmErr, paymentIntent } = await stripe.confirmCardPayment(
+      data.client_secret,
+      { payment_method: { card: cardElement } }
+    )
+    if (confirmErr) {
+      errBox.textContent = confirmErr.message
+      throw new Error(confirmErr.message)
+    }
+    if (paymentIntent.status !== 'succeeded') {
+      throw new Error(`Payment not completed (${paymentIntent.status})`)
+    }
 
-    // Update wallet balance in Supabase
-    const wallet = userWallets.find(w => w.currency === currency)
-    const newBalance = parseFloat(wallet.balance) + amount
-
-    const { error: updateErr } = await client
-      .from('wallets')
-      .update({ balance: newBalance })
-      .eq('user_id', currentUser.id)
-      .eq('currency', currency)
-
-    if (updateErr) throw updateErr
-
-    // Record transaction
-    await client.from('transactions').insert({
-      user_id: currentUser.id,
-      type: 'receive',
-      to_currency: currency,
-      to_amount: amount,
-      from_currency: 'USD',
-      from_amount: amount,
-      rate: 1,
-      status: 'completed'
-    })
-
-    showToast(`Successfully deposited $${amount.toLocaleString()} to ${currency} wallet`)
-    document.getElementById('depositAmount').value = ''
+    // 3. The webhook credits the wallet. Poll until the balance changes.
+    showToast('Payment received. Updating your balance…')
     cardElement.clear()
-    await loadWallets()
+    document.getElementById('depositAmount').value = ''
+
+    let credited = false
+    for (let i = 0; i < 12; i++) {
+      await new Promise(r => setTimeout(r, 1500))
+      await loadWallets()
+      const now = parseFloat(userWallets.find(w => w.currency === currency)?.balance || 0)
+      if (now > before) { credited = true; break }
+    }
+    showToast(credited
+      ? `Deposited ${amount.toLocaleString()} ${currency}`
+      : 'Payment succeeded. Your balance will update shortly. Refresh in a minute.')
 
   } catch (err) {
     showToast(err.message || 'Deposit failed', 'error')
