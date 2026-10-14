@@ -634,7 +634,7 @@ async function doDeposit() {
     const before = parseFloat(userWallets.find(w => w.currency === currency)?.balance || 0)
 
     // 1. Ask our server to create the PaymentIntent
-    const { data, error } = await client.functions.invoke('create-deposit', {
+    const { data, error } = await client.functions.invoke('smart-action', {
       body: { amount, currency }
     })
     if (error || !data?.client_secret) {
