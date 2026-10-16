@@ -148,7 +148,17 @@ async function initUser() {
   const initials = email.slice(0, 2).toUpperCase()
   document.getElementById('userAvatar').textContent = initials
   document.getElementById('userEmail').textContent = email
-  document.getElementById('userName').textContent = email.split('@')[0]
+    document.getElementById('userName').textContent = email.split('@')[0]   // shown until the profile loads
+
+  // Greet by the name saved in Settings (profiles.full_name), falling back to the
+  // name given at signup, then to the email prefix. First name only.
+  const { data: profile } = await client
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+  const fullName = (profile?.full_name || user.user_metadata?.full_name || '').trim()
+  if (fullName) document.getElementById('userName').textContent = fullName.split(/\s+/)[0]
 }
 
 document.getElementById('btnSignOut').addEventListener('click', async () => {
