@@ -120,13 +120,9 @@ async function confirmAddWallet() {
   btn.textContent = 'Adding…'
   btn.disabled = true
 
-  const { data: { user } } = await client.auth.getUser()
-
-const { error } = await client.from('wallets').insert({
-  user_id: user.id,
-  currency: selectedCurrency,
-  balance: 0
-})
+    const { error } = await client.rpc('create_wallet', {
+    p_currency: selectedCurrency
+  })
 
   if (error) {
     showToast(error.message, 'error')
