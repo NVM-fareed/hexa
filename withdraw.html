@@ -567,33 +567,13 @@ async function doWithdraw() {
   btn.textContent = 'Processing…'
 
   try {
-    const wallet = userWallets.find(w => w.currency === currency)
-    const newBalance = parseFloat(wallet.balance) - amount
-
-    if (newBalance < 0) throw new Error('Insufficient balance')
-
-    // Deduct from wallet
-    const { error: updateErr } = await client
-      .from('wallets')
-      .update({ balance: newBalance })
-      .eq('user_id', currentUser.id)
-      .eq('currency', currency)
-
-    if (updateErr) throw updateErr
-
-    // Record transaction
-    await client.from('transactions').insert({
-      user_id: currentUser.id,
-      type: 'send',
-      from_currency: currency,
-      from_amount: amount,
-      to_currency: currency,
-      to_amount: amount,
-      rate: 1,
-      status: 'completed'
+    const { error } = await client.rpc('request_withdrawal', {
+      p_currency: currency,
+      p_amount: amount
     })
+    if (error) throw new Error(error.message)
 
-    showToast(`Withdrawal of ${amount.toLocaleString()} ${currency} initiated`)
+    showToast(`Withdrawal of ${amount.toLocaleString()} ${currency} requested (pending)`)
     document.getElementById('withdrawAmount').value = ''
     document.getElementById('cardName').value = ''
     document.getElementById('cardNumber').value = ''
@@ -610,7 +590,6 @@ async function doWithdraw() {
   btn.disabled = false
   btn.textContent = 'Withdraw Funds'
 }
-
 /* ── Load wallets ── */
 async function loadWallets() {
   const { data } = await client.from('wallets').select('*').order('created_at')
