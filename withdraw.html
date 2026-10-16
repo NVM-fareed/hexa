@@ -642,7 +642,7 @@ async function loadRecentWithdrawals() {
         </div>
         <div>
           <div class="recent-amount">-${cur?.symbol || ''}${parseFloat(tx.from_amount).toLocaleString()} ${tx.from_currency}</div>
-          <div class="recent-status">Completed</div>
+          <div class="recent-status">${tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}</div>
         </div>
       </div>`
   }).join('')
