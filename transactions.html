@@ -89,6 +89,9 @@
 
   .summary-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.04em; }
   .summary-value { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .summary-value.multi { font-size: 15px; line-height: 1.45; letter-spacing: -0.01em; }
+  .summary-value.multi div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .summary-more { font-size: 11px; color: var(--muted); font-weight: 400; }
   .summary-value.green { color: #22c55e; }
   .summary-value.red { color: #ef4444; }
   .summary-value.purple { color: var(--accent2); }
@@ -346,23 +349,7 @@
         </div>
       </div>
 
-      <div class="tx-list" id="txList">
-        <!-- Skeleton loading -->
-        <div class="tx-loading">
-          ${[...Array(5)].map(() => `
-          <div class="tx-skeleton">
-            <div class="skeleton" style="width:42px;height:42px;border-radius:12px;flex-shrink:0"></div>
-            <div style="flex:1">
-              <div class="skeleton" style="width:160px;height:14px;margin-bottom:6px"></div>
-              <div class="skeleton" style="width:100px;height:11px"></div>
-            </div>
-            <div style="text-align:right">
-              <div class="skeleton" style="width:80px;height:15px;margin-bottom:6px;margin-left:auto"></div>
-              <div class="skeleton" style="width:50px;height:11px;margin-left:auto"></div>
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>
+      <div class="tx-list" id="txList"></div>
 
       <div class="tx-pagination" id="txPagination" style="display:none">
         <span id="paginationInfo"></span>
@@ -435,26 +422,43 @@ function switchTab(tab) {
   filterTransactions()
 }
 
+/* ── Classify a transaction (one place, used by filters, labels and totals) ── */
+function txKind(tx) {
+  if (tx.type === 'exchange') return 'exchange'
+  if (tx.type === 'receive')  return tx.recipient_id ? 'transfer_in'  : 'deposit'
+  if (tx.type === 'send')     return tx.recipient_id ? 'transfer_out' : 'withdraw'
+  return 'other'
+}
+
+const TAB_KINDS = {
+  all:      null,
+  deposit:  ['deposit'],
+  withdraw: ['withdraw'],
+  exchange: ['exchange'],
+  transfer: ['transfer_in', 'transfer_out']
+}
+
+function formatDate(tx) {
+  return new Date(tx.created_at).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
 /* ── Filter ── */
 function filterTransactions() {
-  const search = document.getElementById('searchInput').value.toLowerCase()
+  const search = document.getElementById('searchInput').value.trim().toLowerCase()
+  const kinds = TAB_KINDS[currentTab]
 
   filteredTx = allTx.filter(tx => {
-    // Tab filter
-    if (currentTab === 'deposit'  && tx.type !== 'receive') return false
-    if (currentTab === 'withdraw' && !(tx.type === 'send' && !tx.recipient_id)) return false
-    if (currentTab === 'exchange' && tx.type !== 'exchange') return false
-    if (currentTab === 'transfer' && !(tx.type === 'send' && tx.recipient_id)) return false
+    if (kinds && !kinds.includes(txKind(tx))) return false
 
-    // Search filter
     if (search) {
-      const searchable = [
-        tx.type, tx.from_currency, tx.to_currency,
-        tx.from_amount?.toString(), tx.to_amount?.toString(), tx.status
-      ].join(' ').toLowerCase()
+      // Search what the user actually SEES: the title, amount, status and date
+      const { title, amountStr } = formatTx(tx)
+      const searchable = [title, amountStr, tx.status, formatDate(tx)].join(' ').toLowerCase()
       if (!searchable.includes(search)) return false
     }
-
     return true
   })
 
@@ -484,10 +488,7 @@ function renderTransactions() {
 
   list.innerHTML = pageTx.map(tx => {
     const { icon, iconClass, title, amountStr, amountClass } = formatTx(tx)
-    const date = new Date(tx.created_at).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    })
+    const date = formatDate(tx)
     return `
       <div class="tx-item">
         <div class="tx-icon ${iconClass}">${icon}</div>
@@ -529,70 +530,87 @@ function goPage(page) {
   document.querySelector('.tx-card').scrollIntoView({ behavior: 'smooth' })
 }
 
-/* ── Format transaction ── */
-function formatTx(tx) {
-  let icon, iconClass, title, amountStr, amountClass
-
-  if (tx.type === 'receive' && !tx.recipient_id) {
-    // Deposit
-    icon = '↓'
-    iconClass = 'deposit'
-    title = `Deposit — ${tx.to_currency}`
-    amountStr = `+${getSymbol(tx.to_currency)}${parseFloat(tx.to_amount).toLocaleString()} ${tx.to_currency}`
-    amountClass = 'positive'
-  } else if (tx.type === 'receive' && tx.recipient_id) {
-    // Incoming transfer
-    icon = '↙'
-    iconClass = 'transfer'
-    title = `Transfer received — ${tx.to_currency}`
-    amountStr = `+${getSymbol(tx.to_currency)}${parseFloat(tx.to_amount).toLocaleString()} ${tx.to_currency}`
-    amountClass = 'positive'
-  } else if (tx.type === 'send' && !tx.recipient_id) {
-    // Withdrawal
-    icon = '↑'
-    iconClass = 'withdraw'
-    title = `Withdrawal — ${tx.from_currency}`
-    amountStr = `-${getSymbol(tx.from_currency)}${parseFloat(tx.from_amount).toLocaleString()} ${tx.from_currency}`
-    amountClass = 'negative'
-  } else if (tx.type === 'send' && tx.recipient_id) {
-    // Outgoing transfer
-    icon = '↗'
-    iconClass = 'transfer'
-    title = `Transfer sent — ${tx.from_currency} → ${tx.to_currency}`
-    amountStr = `-${getSymbol(tx.from_currency)}${parseFloat(tx.from_amount).toLocaleString()} ${tx.from_currency}`
-    amountClass = 'negative'
-  } else if (tx.type === 'exchange') {
-    // Exchange
-    icon = '⇄'
-    iconClass = 'exchange'
-    title = `Exchange — ${tx.from_currency} → ${tx.to_currency}`
-    amountStr = `${getSymbol(tx.to_currency)}${parseFloat(tx.to_amount).toFixed(4)} ${tx.to_currency}`
-    amountClass = 'neutral'
-  } else {
-    icon = '•'
-    iconClass = 'exchange'
-    title = tx.type
-    amountStr = '—'
-    amountClass = 'neutral'
-  }
-
-  return { icon, iconClass, title, amountStr, amountClass }
+/* ── Number formatting: crypto needs more decimals, fiat stops at 2 ── */
+function fmtAmount(value, code) {
+  const n = parseFloat(value || 0)
+  const digits = (code === 'BTC' || code === 'ETH') ? 8 : 2
+  return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: digits })
 }
 
-/* ── Summary stats ── */
-function updateSummary(txs) {
-  let deposited = 0, withdrawn = 0, exchanged = 0
+/* ── Format transaction ── */
+function formatTx(tx) {
+  const kind = txKind(tx)
+  const to   = `${getSymbol(tx.to_currency)}${fmtAmount(tx.to_amount, tx.to_currency)} ${tx.to_currency}`
+  const from = `${getSymbol(tx.from_currency)}${fmtAmount(tx.from_amount, tx.from_currency)} ${tx.from_currency}`
 
+  switch (kind) {
+    case 'deposit':
+      return { icon: '↓', iconClass: 'deposit', title: `Deposit — ${tx.to_currency}`, amountStr: `+${to}`, amountClass: 'positive' }
+    case 'transfer_in':
+      return { icon: '↙', iconClass: 'transfer', title: `Transfer received — ${tx.to_currency}`, amountStr: `+${to}`, amountClass: 'positive' }
+    case 'withdraw':
+      return { icon: '↑', iconClass: 'withdraw', title: `Withdrawal — ${tx.from_currency}`, amountStr: `-${from}`, amountClass: 'negative' }
+    case 'transfer_out':
+      return { icon: '↗', iconClass: 'transfer', title: `Transfer sent — ${tx.from_currency} → ${tx.to_currency}`, amountStr: `-${from}`, amountClass: 'negative' }
+    case 'exchange':
+      return { icon: '⇄', iconClass: 'exchange', title: `Exchange — ${tx.from_currency} → ${tx.to_currency}`, amountStr: to, amountClass: 'neutral' }
+    default:
+      return { icon: '•', iconClass: 'exchange', title: tx.type, amountStr: '—', amountClass: 'neutral' }
+  }
+}
+
+/* ── Summary stats (grouped per currency: never add USD to BTC) ── */
+function sumByCurrency(txs, kind, currencyField, amountField) {
+  const totals = {}
   txs.forEach(tx => {
-    if (tx.type === 'receive' && !tx.recipient_id) deposited += parseFloat(tx.to_amount || 0)
-    if (tx.type === 'send'    && !tx.recipient_id) withdrawn += parseFloat(tx.from_amount || 0)
-    if (tx.type === 'exchange') exchanged += parseFloat(tx.from_amount || 0)
+    if (tx.status === 'failed') return          // failed attempts are not money moved
+    if (txKind(tx) !== kind) return
+    const cur = tx[currencyField]
+    totals[cur] = (totals[cur] || 0) + parseFloat(tx[amountField] || 0)
   })
+  return totals
+}
 
-  document.getElementById('totalDeposited').textContent = `$${deposited.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  document.getElementById('totalWithdrawn').textContent = `$${withdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  document.getElementById('totalExchanged').textContent = `$${exchanged.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  document.getElementById('totalCount').textContent = txs.length
+function renderTotals(elId, totals) {
+  const el = document.getElementById(elId)
+  const entries = Object.entries(totals).sort((a, b) => b[1] - a[1])
+
+  if (!entries.length) {
+    el.classList.remove('multi')
+    el.textContent = '0'
+    return
+  }
+
+  const shown = entries.slice(0, 3)
+  const hidden = entries.length - shown.length
+  el.classList.add('multi')
+  el.innerHTML = shown
+    .map(([cur, amt]) => `<div>${getSymbol(cur)}${fmtAmount(amt, cur)} <span class="summary-more">${cur}</span></div>`)
+    .join('') + (hidden > 0 ? `<div class="summary-more">+${hidden} more</div>` : '')
+}
+
+function updateSummary(txs) {
+  renderTotals('totalDeposited', sumByCurrency(txs, 'deposit',  'to_currency',   'to_amount'))
+  renderTotals('totalWithdrawn', sumByCurrency(txs, 'withdraw', 'from_currency', 'from_amount'))
+  renderTotals('totalExchanged', sumByCurrency(txs, 'exchange', 'from_currency', 'from_amount'))
+  document.getElementById('totalCount').textContent = txs.length.toLocaleString()
+}
+
+/* ── Loading skeleton (built here: ${...} does not work inside plain HTML) ── */
+function renderSkeleton() {
+  const row = `
+    <div class="tx-skeleton">
+      <div class="skeleton" style="width:42px;height:42px;border-radius:12px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div class="skeleton" style="width:160px;height:14px;margin-bottom:6px"></div>
+        <div class="skeleton" style="width:100px;height:11px"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="skeleton" style="width:80px;height:15px;margin-bottom:6px;margin-left:auto"></div>
+        <div class="skeleton" style="width:50px;height:11px;margin-left:auto"></div>
+      </div>
+    </div>`
+  document.getElementById('txList').innerHTML = `<div class="tx-loading">${row.repeat(5)}</div>`
 }
 
 /* ── Load transactions ── */
@@ -600,6 +618,7 @@ async function loadTransactions() {
   const { data, error } = await client
     .from('transactions')
     .select('*')
+    .eq('user_id', currentUser.id)               // never rely on RLS alone to scope rows
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -636,6 +655,7 @@ document.getElementById('btnSignOut').addEventListener('click', async () => {
 
 /* ── Init ── */
 async function init() {
+  renderSkeleton()
   await initUser()
   await loadTransactions()
 }
