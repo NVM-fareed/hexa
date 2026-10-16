@@ -487,7 +487,6 @@
 const { createClient } = supabase
 const SUPABASE_URL = 'https://lkgtpqkvkgicfxxbttba.supabase.co'
 const SUPABASE_KEY = 'sb_publishable_zZGsFQQllmYYBhTz8U8DXA_G64oXaT0'
-const EXCHANGE_API_KEY = '41c5d3ed2dbcff78158ec738'
 const client = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const CURRENCIES = [
@@ -591,6 +590,13 @@ function swapCurrencies() {
 }
 
 /* ── Fetch live rate ── */
+async function fnErrorMessage(error, fallback) {
+  try {
+    const body = await error.context.json()
+    if (body?.error) return body.error
+  } catch (_) {}
+  return fallback
+}
 async function fetchRate() {
   const from = document.getElementById('fromCurrency').value
   const to   = document.getElementById('toCurrency').value
@@ -603,21 +609,18 @@ async function fetchRate() {
   document.getElementById('rateVal').textContent = 'Loading…'
 
   try {
-    const res = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/pair/${from}/${to}`)
-    const data = await res.json()
+    const { data, error } = await client.functions.invoke('bright-api', {
+      body: { mode: 'quote', from, to }
+    })
+    if (error || !data?.rate) throw new Error('no rate')
 
-    if (data.result === 'success') {
-      currentRate = data.conversion_rate
-      document.getElementById('rateVal').textContent = `1 ${from} = ${currentRate.toFixed(6)} ${to}`
-      document.getElementById('rateLive').style.display = 'flex'
-      calculateToAmount()
-      updateBalanceHints()
-    } else {
-      document.getElementById('rateVal').textContent = 'Rate unavailable'
-      currentRate = null
-    }
+    currentRate = data.rate
+    document.getElementById('rateVal').textContent = `1 ${from} = ${currentRate.toFixed(6)} ${to}`
+    document.getElementById('rateLive').style.display = 'flex'
+    calculateToAmount()
+    updateBalanceHints()
   } catch (err) {
-    document.getElementById('rateVal').textContent = 'Failed to fetch rate'
+    document.getElementById('rateVal').textContent = 'Rate unavailable'
     currentRate = null
   }
 
@@ -677,52 +680,17 @@ async function doExchange() {
 }
 
 /* ── Swap between own wallets ── */
-async function doSwap(from, to, fromAmt, toAmt) {
+async function doSwap(from, to, fromAmt, _ignoredToAmt) {
   const btn = document.getElementById('btnExchange')
 
-  // Deduct from source wallet
-  const fromWallet = userWallets.find(w => w.currency === from)
-  const newFromBal = parseFloat(fromWallet.balance) - fromAmt
-
-  const { error: e1 } = await client
-    .from('wallets')
-    .update({ balance: newFromBal })
-    .eq('user_id', currentUser.id)
-    .eq('currency', from)
-
-  if (e1) throw e1
-
-  // Add to destination wallet (create if doesn't exist)
-  const toWallet = userWallets.find(w => w.currency === to)
-
-  if (toWallet) {
-    const newToBal = parseFloat(toWallet.balance) + toAmt
-    const { error: e2 } = await client
-      .from('wallets')
-      .update({ balance: newToBal })
-      .eq('user_id', currentUser.id)
-      .eq('currency', to)
-    if (e2) throw e2
-  } else {
-    const { error: e2 } = await client
-      .from('wallets')
-      .insert({ user_id: currentUser.id, currency: to, balance: toAmt })
-    if (e2) throw e2
+  const { data, error } = await client.functions.invoke('bright-api', {
+    body: { mode: 'swap', from, to, amount: fromAmt }
+  })
+  if (error || !data?.ok) {
+    throw new Error(await fnErrorMessage(error, data?.error || 'Exchange failed'))
   }
 
-  // Record transaction
-  await client.from('transactions').insert({
-    user_id: currentUser.id,
-    type: 'exchange',
-    from_currency: from,
-    to_currency: to,
-    from_amount: fromAmt,
-    to_amount: toAmt,
-    rate: currentRate,
-    status: 'completed'
-  })
-
-  showToast(`Swapped ${fromAmt} ${from} → ${toAmt.toFixed(4)} ${to}`)
+  showToast(`Swapped ${fromAmt} ${from} → ${Number(data.to_amount).toFixed(4)} ${to}`)
   document.getElementById('fromAmount').value = ''
   document.getElementById('toAmount').value = ''
   btn.textContent = currentMode === 'swap' ? 'Confirm Exchange' : 'Send Funds'
@@ -731,81 +699,16 @@ async function doSwap(from, to, fromAmt, toAmt) {
   await loadRecentExchanges()
 }
 
-/* ── Send to another user ── */
-async function doSendToUser(from, to, fromAmt, toAmt) {
+async function doSendToUser(from, to, fromAmt, _ignoredToAmt) {
   const btn = document.getElementById('btnExchange')
   const recipientEmail = document.getElementById('recipientEmail').value.trim()
 
-  // Look up recipient by email
-  const { data: recipients, error: lookupErr } = await client
-    .from('profiles')
-    .select('id')
-    .eq('email', recipientEmail)
-    .single()
-
-  if (lookupErr || !recipients) {
-    throw new Error('User not found — make sure the email is registered on HexaHold')
-  }
-
-  const recipientId = recipients.id
-
-  // Deduct from sender
-  const fromWallet = userWallets.find(w => w.currency === from)
-  const newFromBal = parseFloat(fromWallet.balance) - fromAmt
-
-  const { error: e1 } = await client
-    .from('wallets')
-    .update({ balance: newFromBal })
-    .eq('user_id', currentUser.id)
-    .eq('currency', from)
-
-  if (e1) throw e1
-
-  // Record sender transaction
-  await client.from('transactions').insert({
-    user_id: currentUser.id,
-    type: 'send',
-    from_currency: from,
-    to_currency: to,
-    from_amount: fromAmt,
-    to_amount: toAmt,
-    rate: currentRate,
-    recipient_id: recipientId,
-    status: 'completed'
+  const { data, error } = await client.functions.invoke('bright-api', {
+    body: { mode: 'send', from, to, amount: fromAmt, recipient_email: recipientEmail }
   })
-
-  // Add to recipient's wallet
-  const { data: recipientWallet } = await client
-    .from('wallets')
-    .select('*')
-    .eq('user_id', recipientId)
-    .eq('currency', to)
-    .single()
-
-  if (recipientWallet) {
-    await client
-      .from('wallets')
-      .update({ balance: parseFloat(recipientWallet.balance) + toAmt })
-      .eq('user_id', recipientId)
-      .eq('currency', to)
-  } else {
-    await client
-      .from('wallets')
-      .insert({ user_id: recipientId, currency: to, balance: toAmt })
+  if (error || !data?.ok) {
+    throw new Error(await fnErrorMessage(error, data?.error || 'Transfer failed'))
   }
-
-  // Record recipient transaction
-  await client.from('transactions').insert({
-    user_id: recipientId,
-    type: 'receive',
-    from_currency: from,
-    to_currency: to,
-    from_amount: fromAmt,
-    to_amount: toAmt,
-    rate: currentRate,
-    recipient_id: currentUser.id,
-    status: 'completed'
-  })
 
   showToast(`Sent ${fromAmt} ${from} to ${recipientEmail}`)
   document.getElementById('fromAmount').value = ''
