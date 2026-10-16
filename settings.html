@@ -386,8 +386,8 @@ s0.parentNode.insertBefore(s1,s0);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const { createClient } = supabase
-const SUPABASE_URL = 'YOUR_SUPABASE_URL'
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'
+const SUPABASE_URL = 'https://lkgtpqkvkgicfxxbttba.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_zZGsFQQllmYYBhTz8U8DXA_G64oXaT0'
 const client = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 let currentUser = null
@@ -456,23 +456,35 @@ function selectCurrencyPref(code, el) {
   selectedCurrency = code
 }
 
+/* ── Update the profile row. Returns an error message, or null on success.
+      A Supabase update that matches NO row does not error, so we ask for the
+      updated rows back and treat "zero rows" as a failure. ── */
+async function updateProfile(fields) {
+  const { data, error } = await client
+    .from('profiles')
+    .update(fields)
+    .eq('id', currentUser.id)
+    .select('id')
+
+  if (error) return error.message
+  if (!data || !data.length) return 'No profile found for this account. Please contact support.'
+  return null
+}
+
 /* ── Save profile ── */
 async function saveProfile() {
   const btn = document.getElementById('btnSaveProfile')
   btn.disabled = true
   btn.textContent = 'Saving…'
 
-  const { error } = await client
-    .from('profiles')
-    .update({
-      full_name: document.getElementById('fullName').value,
-      phone: document.getElementById('phoneField').value,
-      country: document.getElementById('countryField').value
-    })
-    .eq('id', currentUser.id)
+  const msg = await updateProfile({
+    full_name: document.getElementById('fullName').value.trim(),
+    phone: document.getElementById('phoneField').value.trim(),
+    country: document.getElementById('countryField').value
+  })
 
-  if (error) {
-    showToast(error.message, 'error')
+  if (msg) {
+    showToast(msg, 'error')
   } else {
     showToast('Profile updated successfully')
   }
@@ -524,13 +536,10 @@ async function savePreferences() {
   btn.disabled = true
   btn.textContent = 'Saving…'
 
-  const { error } = await client
-    .from('profiles')
-    .update({ default_currency: selectedCurrency })
-    .eq('id', currentUser.id)
+  const msg = await updateProfile({ default_currency: selectedCurrency })
 
-  if (error) {
-    showToast(error.message, 'error')
+  if (msg) {
+    showToast(msg, 'error')
   } else {
     showToast('Preferences saved')
   }
