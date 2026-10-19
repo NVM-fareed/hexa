@@ -56,8 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const country   = document.getElementById('country').value
       const phone     = document.getElementById('phone').value.trim()
 
-      // Sign up with Supabase Auth
-      const { data, error } = await client.auth.signUp({ email, password })
+      // Sign up. Name, phone and country travel as metadata and a database trigger
+      // (on_auth_user_created) creates the profile row. That works whether or not
+      // email confirmation is switched on, because it doesn't need a browser session.
+      const { data, error } = await client.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: `${firstName} ${lastName}`.trim(), phone, country },
+          emailRedirectTo: new URL('login.html', window.location.href).href
+        }
+      })
 
       if (error) {
         btn.textContent = error.message
@@ -66,29 +75,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return
       }
 
-      // Save profile data
-      const { error: profileError } = await client
-  .from('profiles')
-  .upsert({
-    id: data.user.id,
-    email,
-    full_name: `${firstName} ${lastName}`,
-    phone,
-    country,
-    default_currency: 'USD'
-  }, { onConflict: 'id' }) 
-
-       
-      if (profileError) {
-        btn.textContent = profileError.message
+      // With email confirmation on, an already-registered address returns NO error
+      // and a user with an empty identities list. Tell the person instead of
+      // pretending the account was created.
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        btn.textContent = 'An account with this email already exists'
         btn.style.background = '#ef4444'
         btn.disabled = false
         return
       }
 
-      btn.innerHTML = '✓ Account created!'
-      btn.style.background = '#22c55e'
-      setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
+      if (data.session) {
+        // Email confirmation is off: they are already signed in.
+        btn.innerHTML = '✓ Account created!'
+        btn.style.background = '#22c55e'
+        setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
+      } else {
+        // Email confirmation is on: no session until they click the link.
+        btn.innerHTML = '✓ Check your email to confirm your account'
+        btn.style.background = '#22c55e'
+      }
     })
   }
 
