@@ -11,9 +11,6 @@
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-trail" id="cursorTrail"></div>
-
 <!-- NAV -->
 <nav id="nav">
   <a href="#" class="logo">
@@ -42,7 +39,24 @@
     <a href="login.html" class="btn-ghost">Login</a>
     <a href="register.html" class="btn-primary">Get Started</a>
   </div>
+  <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+ 
+<!-- MOBILE MENU (opened by the hamburger below 768px) -->
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <a class="mobile-nav-link" href="#features">Features</a>
+  <a class="mobile-nav-link" href="#how">How it works</a>
+  <a class="mobile-nav-link" href="#reviews">Reviews</a>
+  <div class="mobile-menu-divider"></div>
+  <div class="mobile-menu-actions">
+    <a href="login.html" class="btn-ghost">Login</a>
+    <a href="register.html" class="btn-primary">Get Started</a>
+  </div>
+</div>
+ 
+
 
 <!-- HERO -->
 <section class="hero" id="top">
