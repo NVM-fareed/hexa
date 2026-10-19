@@ -148,7 +148,7 @@ async function initUser() {
   const initials = email.slice(0, 2).toUpperCase()
   document.getElementById('userAvatar').textContent = initials
   document.getElementById('userEmail').textContent = email
-    document.getElementById('userName').textContent = email.split('@')[0]   // shown until the profile loads
+  document.getElementById('userName').textContent = email.split('@')[0]   // shown until the profile loads
 
   // Greet by the name saved in Settings (profiles.full_name), falling back to the
   // name given at signup, then to the email prefix. First name only.
