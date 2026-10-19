@@ -4,40 +4,23 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ── Custom Cursor ── */
-  const cur   = document.getElementById('cursor');
-  const trail = document.getElementById('cursorTrail');
-
-  if (cur && trail) {
-    let mx = 0, my = 0, tx = 0, ty = 0;
-
-    document.addEventListener('mousemove', e => {
-      mx = e.clientX;
-      my = e.clientY;
-      cur.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
-    });
-
-    (function animTrail() {
-      tx += (mx - tx - 18) * 0.13;
-      ty += (my - ty - 18) * 0.13;
-      trail.style.transform = `translate(${tx}px, ${ty}px)`;
-      requestAnimationFrame(animTrail);
-    })();
-
-    document.querySelectorAll('a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        trail.style.width        = '52px';
-        trail.style.height       = '52px';
-        trail.style.borderColor  = 'rgba(124,92,252,0.7)';
-      });
-      el.addEventListener('mouseleave', () => {
-        trail.style.width        = '36px';
-        trail.style.height       = '36px';
-        trail.style.borderColor  = 'rgba(124,92,252,0.4)';
-      });
-    });
-  }
-
+      /* ── Mobile menu (hamburger) ── */
+    const burger = document.getElementById('navHamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (burger && mobileMenu) {
+      const setMenuOpen = open => {
+        burger.classList.toggle('open', open);
+        mobileMenu.classList.toggle('open', open);
+        burger.setAttribute('aria-expanded', String(open));
+        burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        mobileMenu.setAttribute('aria-hidden', String(!open));
+        document.body.classList.toggle('menu-open', open);
+      };
+      burger.addEventListener('click', () => setMenuOpen(!mobileMenu.classList.contains('open')));
+      mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenuOpen(false)));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenuOpen(false); });
+      window.addEventListener('resize', () => { if (window.innerWidth > 768) setMenuOpen(false); });
+    }
   /* ── Navbar Shrink on Scroll ── */
   const navbar = document.getElementById('nav');
   if (navbar) {
