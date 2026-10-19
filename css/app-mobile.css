@@ -1,1 +1,117 @@
+/* ============================================================
+   HexaHold — mobile navigation for the logged-in app pages
+   (dashboard, deposit, withdraw, exchange, transactions, settings)
 
+   Below 900px each page hides its sidebar. This file turns that sidebar into a
+   slide-in drawer, opened from a top bar that js/app-mobile.js adds.
+   Selectors are more specific than the pages' own `.sidebar` rules, so this file
+   wins no matter where it is linked.
+   ============================================================ */
+
+/* Desktop: none of the mobile pieces exist visually */
+.m-topbar, .m-backdrop { display: none; }
+
+@media (max-width: 900px) {
+
+  /* ── Top bar ── */
+  .m-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    padding: 12px 20px;
+    background: rgba(10, 10, 15, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border, rgba(124, 92, 252, 0.18));
+  }
+  .m-menu-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    background: none;
+    border: 1px solid var(--border, rgba(124, 92, 252, 0.18));
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .m-menu-btn span {
+    display: block;
+    height: 1.5px;
+    background: var(--text, #f0eeff);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .m-brand {
+    font-family: var(--font-display, 'Syne', sans-serif);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text, #f0eeff);
+    text-decoration: none;
+  }
+  .m-brand span { color: var(--accent2, #a78bfa); }
+
+  /* ── Sidebar becomes a drawer ── */
+  .dash-layout > .sidebar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 86vw);
+    min-width: 0;
+    max-width: none;
+    height: 100%;
+    z-index: 300;
+    overflow-y: auto;
+    transform: translateX(-105%);
+    visibility: hidden;            /* hidden state is also removed from tab order */
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+  }
+  .dash-layout > .sidebar.open {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.5);
+  }
+  .dash-layout > .sidebar .sidebar-nav { overflow-y: auto; }
+
+  /* ── Dimmed backdrop behind the drawer ── */
+  .m-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: rgba(5, 5, 10, 0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .m-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  body.m-nav-open { overflow: hidden; }
+
+  /* ── Stop wide content from pushing the page past the screen edge ──
+     A bare `1fr` grid column will not shrink below its widest child (tab rows, cards, tables),
+     so the whole page grew wider than the phone. minmax(0, 1fr) lets it shrink. */
+  .dash-layout { grid-template-columns: minmax(0, 1fr); }
+  .dash-main   { min-width: 0; max-width: 100%; }
+
+  /* The same problem one level down: the deposit / withdraw / exchange pages collapse their
+     own two-column layouts to a bare `1fr`, which also refuses to shrink. */
+  .deposit-wrap, .withdraw-wrap, .exchange-wrap,
+  .methods-grid, .crypto-grid { grid-template-columns: minmax(0, 1fr); }
+  .card-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .deposit-wrap > *, .withdraw-wrap > *, .exchange-wrap > * { min-width: 0; }
+
+  /* Amount boxes next to a currency selector: a number input will not shrink below its default
+     width unless told it may, which pushed the exchange page's currency selector out of view. */
+  .input-wrap input, .amount-input-wrap input { min-width: 0; }
+}
